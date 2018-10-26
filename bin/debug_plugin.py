@@ -4,7 +4,7 @@ import os
 import ast
 import tempfile
 import re
-from parasite.bin.download_source import pa_root, download_parasite, download_plugin
+from .download_source import pa_root, download_parasite, download_plugin
 
 
 def debug_plugin(plugin_path):

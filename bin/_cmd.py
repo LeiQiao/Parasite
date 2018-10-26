@@ -4,7 +4,7 @@ import os
 import git
 import re
 import ast
-from parasite.bin.download_source import pa_root, download_parasite, download_plugin
+from .download_source import pa_root, download_parasite, download_plugin
 import sys
 import tempfile
 

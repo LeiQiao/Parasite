@@ -1,1 +1,0 @@
-from parasite.bin import *

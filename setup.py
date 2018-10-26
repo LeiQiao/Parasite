@@ -11,15 +11,19 @@ with io.open('parasite/pa/__init__.py', 'rb') as f:
         f.read().decode('utf-8')).group(1)))
 
 setup(
-    name='parasite',
+    name='pa',
     description='Parasite',
     version=version,
     packages=[
-        'parasite',
-        'parasite.bin'
+        'pa',
+        'pa.bin'
     ],
+    package_dir={
+        "pa": "parasite/pa",
+        "pa.bin": "bin"
+    },
     include_package_data=True,
-    entry_points={"console_scripts": ["pa=bin:main"]},
+    entry_points={"console_scripts": ["pa=pa.bin:main"]},
     tests_require=['pytest'],
     classifiers=[
         'Development Status :: 3 - Alpha',

@@ -2,6 +2,7 @@ import os
 import ast
 import git
 import shutil
+import tempfile
 
 
 pa_root = os.path.join(os.getenv("HOME"), '.parasite/repos/master/Specs/')
@@ -13,7 +14,9 @@ def download_parasite(output_dir):
         return
 
     print('downloading Parasite...')
-    git.Repo.clone_from(url='https://github.com/LeiQiao/Parasite.git', to_path=output_dir)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        git.Repo.clone_from(url='https://github.com/LeiQiao/Parasite.git', to_path=temp_dir)
+        shutil.copytree(os.path.join(temp_dir, 'parasite'), output_dir)
 
 
 def download_plugin(plugin_root, plugin_name, temp_dir, output_dir):
