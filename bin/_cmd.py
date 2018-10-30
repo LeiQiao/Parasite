@@ -28,7 +28,7 @@ def update():
     if clone:
         git.Repo.clone_from(url='https://github.com/LeiQiao/Parasite-Repo.git', to_path=pa_root)
     else:
-        result = git.Git(pa_root).checkout()
+        result = git.Git(pa_root).pull()
         print(result)
 
     cprint('更新成功', 'blue')
