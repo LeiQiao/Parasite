@@ -88,21 +88,12 @@ def download_plugin(plugin_root, plugin_name, temp_dir, output_dir):
         shutil.copytree(git_path, plugin_dir)
 
 
-def get_all_depend_manifest(plugin_root, manifest_file):
-    all_depend_manifest = {}
-
-    for file in manifest_file:
-        with open(file) as f:
-            manifest = ast.literal_eval(f.read())
-        for depend_name in manifest['depends']:
-            all_depend_manifest = __merge_manifest(all_depend_manifest,
-                                                   __get_all_depend_manifest(plugin_root, depend_name))
-        all_depend_manifest = __merge_manifest(all_depend_manifest, {manifest['name']:manifest})
-
-    return all_depend_manifest
+def get_plugin_manifest_path(plugin_root, plugin_name):
+    manifest_path, manifest, _, _ = __get_plugin_manifest(plugin_root, plugin_name)
+    return manifest_path
 
 
-def __get_all_depend_manifest(plugin_root, plugin_name, depend_by=None):
+def __get_plugin_manifest(plugin_root, plugin_name):
     name_and_version = plugin_name.split(':')
     plugin_name = name_and_version[0].strip()
     if len(name_and_version) > 1:
@@ -123,13 +114,33 @@ def __get_all_depend_manifest(plugin_root, plugin_name, depend_by=None):
                                   .format(plugin_name, plugin_version))
 
     plugin_path = os.path.join(plugin_path, plugin_version)
+    manifest_path = os.path.join(plugin_path, '__manifest__.py')
     try:
-        with open(os.path.join(plugin_path, '__manifest__.py')) as f:
+        with open(manifest_path) as f:
             manifest = ast.literal_eval(f.read())
     except Exception as e:
         str(e)
         raise ImportError('load plugin \'{0} ({1})\' failed, you can run \'update\' to reload plugin.'
                           .format(plugin_name, plugin_version))
+    return manifest_path, manifest, plugin_name, plugin_version
+
+
+def get_all_depend_manifest(plugin_root, manifest_file):
+    all_depend_manifest = {}
+
+    for file in manifest_file:
+        with open(file) as f:
+            manifest = ast.literal_eval(f.read())
+        for depend_name in manifest['depends']:
+            all_depend_manifest = __merge_manifest(all_depend_manifest,
+                                                   __get_all_depend_manifest(plugin_root, depend_name))
+        all_depend_manifest = __merge_manifest(all_depend_manifest, {manifest['name']: manifest})
+
+    return all_depend_manifest
+
+
+def __get_all_depend_manifest(plugin_root, plugin_name, depend_by=None):
+    _, manifest, _, plugin_version = __get_plugin_manifest(plugin_root, plugin_name)
 
     # 防止循环引用
     if depend_by is None:

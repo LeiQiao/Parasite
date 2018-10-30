@@ -1,5 +1,11 @@
 import os
 from .download_source import pa_root, parasite_git_url, get_all_depend_manifest
+from .download_source import get_plugin_manifest_path as __get_plugin_manifest_path
+
+
+def get_plugin_manifest_path(plugin_name):
+    manifest_path, _, _, _ = __get_plugin_manifest_path(pa_root, plugin_name)
+    return manifest_path
 
 
 def deploy_sh(project_name, manifest_file, config_file=None, resource_file=None, output=None):
