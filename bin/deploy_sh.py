@@ -92,7 +92,10 @@ def deploy_sh(project_name, manifest_file, config_file=None, resource_file=None,
             sh_content += 'echo -e "\033[34m writing resource file \'{0}\'... ({1}/{2}) \033[0m"\n'\
                           .format(file_name, index, resource_length)
             if len(dest_path) > 0:
-                file_name = '{0}/{1}'.format(dest_path, file_name)
+                if os.path.isdir(dest_path) or os.path.basename(dest_path) == '':
+                    file_name = '{0}/{1}'.format(dest_path, file_name)
+                else:
+                    file_name = dest_path
             sh_content += 'if [ ! -d "$project_name/{0}" ]; then\n'.format(os.path.dirname(file_name))
             sh_content += '    mkdir -p "$project_name/{0}"\n'.format(os.path.dirname(file_name))
             sh_content += 'fi\n'
