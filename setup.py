@@ -22,6 +22,10 @@ setup(
         "pa": "parasite/pa",
         "pa.bin": "bin"
     },
+    eager_resources=['sample/__manifest__.py'],
+    package_data={
+        '': ['sample/__manifest__.py']
+    },
     include_package_data=True,
     entry_points={"console_scripts": ["pa=pa.bin:main"]},
     tests_require=['pytest'],

@@ -6,7 +6,11 @@ import re
 from .download_source import pa_root, download_parasite, download_plugin
 
 
-def debug_plugin(plugin_path):
+def debug_plugin(plugin_path, config_file=None):
+    if not config_file:
+        if not os.path.exists(config_file):
+            raise FileNotFoundError('file not exists \'{0}\''.format(config_file))
+
     """调试插件"""
     manifest_file = os.path.join(plugin_path, '__manifest__.py')
     try:
@@ -40,7 +44,7 @@ def debug_plugin(plugin_path):
     sys.argv = [
         py_file,
         '-c',
-        'config.conf',
+        'config.conf' if config_file is None else os.path.realpath(config_file),
         '--extra_plugin={0}'.format(os.path.realpath(plugin_path))
     ]
     os.chdir(project_path)
