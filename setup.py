@@ -14,6 +14,11 @@ setup(
     name='pa',
     description='Parasite',
     version=version,
+    install_requires=[
+        'requests',
+        'termcolor',
+        'click'
+    ],
     packages=[
         'pa',
         'pa.bin'
