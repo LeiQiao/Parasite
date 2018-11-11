@@ -4,9 +4,15 @@ import os
 import git
 import re
 import ast
-from bin.download_source import pa_root, parasite_config_url
 import sys
 import requests
+
+if __name__ == '__main__':
+    from bin.download_source import pa_root, parasite_config_url, download_parasite
+    from bin.pycharm_project import create_temp_project
+else:
+    from .download_source import pa_root, parasite_config_url, download_parasite
+    from .pycharm_project import create_temp_project
 
 
 @click.group()
@@ -104,8 +110,12 @@ class {0}(Plugin):
     pass
 """
 DEPLOY_FILE_CONTENT = """import click
-from pa.bin import debug_plugin
-from pa.bin import deploy_sh
+import sys
+for path in sys.path:
+    if path.endswith('.parasite'):
+        sys.path.pop(sys.path.index(path))
+        sys.path.append(path)
+        break
 
 
 @click.group()
@@ -117,6 +127,7 @@ def main():
 @main.command()
 def debug():
     \"\"\"调试\"\"\"
+    from pa.bin import debug_plugin
     debug_plugin(
         # 插件所在的相对路径
         '../{0}/',
@@ -128,6 +139,7 @@ def debug():
 @main.command()
 def build_deploy_sh():
     \"\"\"生成部署脚本\"\"\"
+    from pa.bin import deploy_sh
     deploy_sh(
         # 工程名称
         '{0}',
@@ -160,7 +172,7 @@ def create(project_name, plugin_name, output):
                '[--output=<output dir>]'.format(sys.argv[0]), 'red')
         sys.exit(1)
 
-    project_root = os.path.join(output, project_name)
+    project_root = os.path.expanduser(os.path.join(output, project_name))
 
     if os.path.exists(project_root):
         cprint('fatal: destination path \'{0}\' already exists and is not an empty directory.'
@@ -195,6 +207,9 @@ def create(project_name, plugin_name, output):
         f.write(deploy_file_content)
     with open(os.path.join(deploy_path, 'config.conf'), 'w') as f:
         f.write(config_file_content)
+
+    # 创建 pycharm 的工程文件夹 .idea
+    create_temp_project(project_root, project_name)
 
     cprint('创建成功', 'blue')
 

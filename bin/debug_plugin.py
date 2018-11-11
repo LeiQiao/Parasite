@@ -4,6 +4,7 @@ import ast
 import tempfile
 import re
 from .download_source import pa_root, download_parasite, download_plugin
+from .pycharm_project import add_parasite_path_inspector, ignore_parasite
 
 
 def debug_plugin(plugin_path, config_file=None):
@@ -30,6 +31,13 @@ def debug_plugin(plugin_path, config_file=None):
             for depend_plugin in manifest['depends']:
                 download_plugin(pa_root, depend_plugin, temp_path, project_path)
 
+    # 修改工程文件
+    idea_path = os.path.realpath(os.path.join(plugin_path, '..'))
+    project_name = os.path.basename(idea_path)
+    add_parasite_path_inspector(idea_path, project_name)
+    ignore_parasite(idea_path, project_name)
+
+    # 更改环境变量，启动调试
     py_file = os.path.realpath(os.path.join(project_path, 'Parasite.py'))
     with open(py_file) as f:
         content = f.read()
