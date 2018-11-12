@@ -1,4 +1,5 @@
 import os
+import sys
 import click
 from xml.etree import ElementTree
 
@@ -12,6 +13,7 @@ WORKSPACE_XML = """<?xml version="1.0" encoding="UTF-8"?>
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
+      <option name="SDK_HOME" value="{1}" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/deploy" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -31,6 +33,7 @@ WORKSPACE_XML = """<?xml version="1.0" encoding="UTF-8"?>
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
+      <option name="SDK_HOME" value="{1}" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/deploy" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -44,6 +47,16 @@ WORKSPACE_XML = """<?xml version="1.0" encoding="UTF-8"?>
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
+  </component>
+</project>"""
+
+
+MODULES_XML = """<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/{0}.iml" filepath="$PROJECT_DIR$/.idea/{0}.iml" />
+    </modules>
   </component>
 </project>"""
 
@@ -69,15 +82,22 @@ def create_temp_project(project_path, project_name):
     if not os.path.exists(idea_path):
         os.makedirs(idea_path)
 
-    workspace_xml = WORKSPACE_XML.format(project_name)
+    workspace_xml = WORKSPACE_XML.format(project_name, sys.executable)
     with open(os.path.join(idea_path, 'workspace.xml'), 'w') as f:
         f.write(workspace_xml)
+
+    add_parasite_path_inspector(project_path, project_name)
 
 
 def add_parasite_path_inspector(project_path, project_name):
     idea_path = os.path.join(project_path, '.idea')
     if not os.path.exists(idea_path):
         os.makedirs(idea_path)
+
+    modules_xml = MODULES_XML.format(project_name)
+
+    with open(os.path.join(idea_path, 'modules.xml'), 'w') as f:
+        f.write(modules_xml)
 
     iml_file_name = os.path.join(idea_path, '{0}.iml'.format(project_name))
     if not os.path.exists(iml_file_name):
