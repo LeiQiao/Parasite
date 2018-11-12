@@ -8,10 +8,10 @@ import sys
 import requests
 
 if __name__ == '__main__':
-    from bin.download_source import pa_root, parasite_config_url, download_parasite
+    from bin.download_source import pa_root, parasite_config_url
     from bin.pycharm_project import create_temp_project
 else:
-    from .download_source import pa_root, parasite_config_url, download_parasite
+    from .download_source import pa_root, parasite_config_url
     from .pycharm_project import create_temp_project
 
 
@@ -57,7 +57,7 @@ def search(plugin_name):
 
     plugins = os.listdir(pa_root)
     for full_plugin_name in plugins:
-        if re.match(plugin_name, full_plugin_name):
+        if re.search(plugin_name, full_plugin_name):
             versions = os.listdir(os.path.join(pa_root, full_plugin_name))
             versions.sort(reverse=True)
             if len(versions) == 0:
