@@ -42,9 +42,11 @@ def deploy_sh(project_name, manifest_file, config_file=None, resource_file=None,
         sh_content += 'echo -e "\033[34m installing plugins \'{0}\'...({1}/{2}) \033[0m"\n'\
                       .format(depend_name, index, depend_length)
         if 'git' in manifest['source']:
-            source_path_name = os.path.basename(manifest['source']['git'])
+            branch = manifest['source']['branch'] if 'branch' in manifest['source'] else 'master'
+            source_path_name = '{0}-{1}'.format(os.path.basename(manifest['source']['git']),
+                                                branch)
             source_url = 'git clone -b {0} {1} {2}'\
-                         .format(manifest['source']['branch'] if 'branch' in manifest['source'] else 'master',
+                         .format(branch,
                                  manifest['source']['git'],
                                  source_path_name)
         else:
@@ -89,13 +91,13 @@ def deploy_sh(project_name, manifest_file, config_file=None, resource_file=None,
                 content = f.read()
                 for i in range(len(content)):
                     str_content += '\\\\x{:02X}'.format(content[i])
-            sh_content += 'echo -e "\033[34m writing resource file \'{0}\'... ({1}/{2}) \033[0m"\n'\
-                          .format(file_name, index, resource_length)
             if len(dest_path) > 0:
                 if os.path.isdir(dest_path) or os.path.basename(dest_path) == '':
                     file_name = '{0}/{1}'.format(dest_path, file_name)
                 else:
                     file_name = dest_path
+            sh_content += 'echo -e "\033[34m writing resource file \'{0}\'... ({1}/{2}) \033[0m"\n'\
+                          .format(file_name, index, resource_length)
             sh_content += 'if [ ! -d "$project_name/{0}" ]; then\n'.format(os.path.dirname(file_name))
             sh_content += '    mkdir -p "$project_name/{0}"\n'.format(os.path.dirname(file_name))
             sh_content += 'fi\n'
