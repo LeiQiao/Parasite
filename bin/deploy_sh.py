@@ -42,8 +42,11 @@ def deploy_sh(project_name, manifest_file, config_file=None, resource_file=None,
         sh_content += 'echo -e "\033[34m installing plugins \'{0}\'...({1}/{2}) \033[0m"\n'\
                       .format(depend_name, index, depend_length)
         if 'git' in manifest['source']:
+            git_address = manifest['source']['git']
+            if len(git_address) == 0:
+                raise ModuleNotFoundError('plugin {0} donot have an git repository.'.format(manifest['name']))
             branch = manifest['source']['branch'] if 'branch' in manifest['source'] else 'master'
-            source_path_name = '{0}-{1}'.format(os.path.basename(manifest['source']['git']),
+            source_path_name = '{0}-{1}'.format(os.path.basename(git_address),
                                                 branch)
             source_url = 'git clone -b {0} {1} {2}'\
                          .format(branch,
