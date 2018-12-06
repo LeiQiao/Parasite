@@ -9,4 +9,4 @@ pa.web_app = app
 BasePlugin().on_load()
 
 if __name__ == '__main__':
-    app.run(host=pa.server_ip, port=pa.server_port, threaded=True)
+    app.run(host=pa.server_ip, port=int(pa.server_port), threaded=True)
