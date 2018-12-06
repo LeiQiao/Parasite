@@ -107,6 +107,7 @@ PLUGIN_FILE_CONTENT = """from pa.plugin import Plugin
 
 
 class {0}(Plugin):
+    __pluginname__ = '{1}'
     pass
 """
 DEPLOY_FILE_CONTENT = """import click
@@ -132,7 +133,9 @@ def debug():
         # 插件所在的相对路径
         '../{0}/',
         # 数据库等配置信息
-        '../deploy/config.conf'
+        '../deploy/config.conf',
+        # 与当前插件一起开发的本地插件所在的路径
+        ['../']
     )
 
 
@@ -163,12 +166,12 @@ if __name__ == '__main__':
 
 @main.command()
 @click.argument('project_name', required=True, default='')
-@click.argument('plugin_name', required=False, default='')
+@click.argument('plugin_name', required=True, default='')
 @click.option('--output', default='./')
 def create(project_name, plugin_name, output):
     """创建工程，生成工程的目录及调试和部署文件"""
-    if len(project_name) == 0 or len(plugin_name) == 0:
-        cprint('usage: {0} install <project_name> <plugin name> '
+    if len(project_name) == 0:
+        cprint('usage: {0} install <project_name> [plugin name] '
                '[--output=<output dir>]'.format(sys.argv[0]), 'red')
         sys.exit(1)
 
@@ -179,19 +182,15 @@ def create(project_name, plugin_name, output):
                .format(project_name), 'red')
         sys.exit(1)
 
-    # 创建示例工程文件
-    init_file_content = INIT_FILE_CONTENT.format(project_name, plugin_name)
-    manifest_file_content = MANIFEST_FILE_CONTENT.format(project_name)
-    plugin_file_content = PLUGIN_FILE_CONTENT.format(plugin_name)
+    if len(plugin_name) == 0:
+        plugin_name = '{0}_plugin'.format(to_underscore(project_name))
+        class_name = '{0}Plugin'.format(to_camel(project_name))
+    else:
+        class_name = to_camel(plugin_name)
 
-    project_path = os.path.join(project_root, project_name)
-    os.makedirs(project_path)
-    with open(os.path.join(project_path, '__init__.py'), 'w') as f:
-        f.write(init_file_content)
-    with open(os.path.join(project_path, '__manifest__.py'), 'w') as f:
-        f.write(manifest_file_content)
-    with open(os.path.join(project_path, '{0}.py'.format(project_name)), 'w') as f:
-        f.write(plugin_file_content)
+    # 创建插件
+    os.makedirs(project_root)
+    create_plugin_at(project_name, plugin_name, class_name, project_root)
 
     # 创建示例工程的部署和调试脚本
     deploy_file_content = DEPLOY_FILE_CONTENT.format(project_name)
@@ -212,6 +211,85 @@ def create(project_name, plugin_name, output):
     create_temp_project(project_root, project_name)
 
     cprint('创建成功', 'blue')
+
+
+@main.command()
+@click.argument('project_name', required=True, default='')
+@click.argument('plugin_name', required=True, default='')
+@click.option('--output', default='./')
+def create_plugin(project_name, plugin_name, output):
+    """创建插件"""
+    if len(project_name) == 0:
+        cprint('usage: {0} install <project_name> [plugin_name] '
+               '[--output=<output dir>]'.format(sys.argv[0]), 'red')
+        sys.exit(1)
+
+    if len(plugin_name) == 0:
+        plugin_name = '{0}_plugin'.format(to_underscore(project_name))
+        class_name = '{0}Plugin'.format(to_camel(project_name))
+    else:
+        class_name = to_camel(plugin_name)
+
+    project_root = os.path.expanduser(output)
+    create_plugin_at(project_name, plugin_name, class_name, project_root)
+
+    cprint('创建成功', 'blue')
+
+
+def create_plugin_at(project_name, plugin_name, class_name, output):
+    project_root = output
+    if not os.path.exists(project_root):
+        cprint('fatal: destination path \'{0}\' not exists.'
+               .format(project_root), 'red')
+        sys.exit(1)
+
+    # 创建示例工程文件
+    init_file_content = INIT_FILE_CONTENT.format(plugin_name, class_name)
+    manifest_file_content = MANIFEST_FILE_CONTENT.format(project_name)
+    plugin_file_content = PLUGIN_FILE_CONTENT.format(class_name, project_name)
+
+    project_path = os.path.join(project_root, project_name)
+    os.makedirs(project_path)
+    with open(os.path.join(project_path, '__init__.py'), 'w') as f:
+        f.write(init_file_content)
+    with open(os.path.join(project_path, '__manifest__.py'), 'w') as f:
+        f.write(manifest_file_content)
+    with open(os.path.join(project_path, '{0}.py'.format(plugin_name)), 'w') as f:
+        f.write(plugin_file_content)
+
+
+def to_underscore(name):
+    underscore_name = ''
+    for i in range(len(name)):
+        cr = name[i]
+        if 'A' <= cr <= 'Z':
+            if i > 0 and ('a' <= name[i-1] <= 'z'):
+                underscore_name += '_{0}'.format(cr)
+            else:
+                underscore_name += '{0}'.format(cr.lower())
+        else:
+            underscore_name += cr
+    return underscore_name
+
+
+def to_camel(name):
+    camel_name = ''
+    for i in range(len(name)):
+        if i == 0:
+            if 'a' <= name[0] <= 'z':
+                camel_name += name[0].upper()
+            else:
+                camel_name += name[0]
+            continue
+        prev_cr = name[i-1]
+        cr = name[i]
+        if cr == '_':
+            continue
+        if prev_cr == '_':
+            camel_name += cr.upper()
+        else:
+            camel_name += cr
+    return camel_name
 
 
 if __name__ == '__main__':

@@ -180,3 +180,47 @@ def __merge_manifest(manifest_dict, other_manifest_dict):
         else:
             manifest_dict[depend_name] = depend_manifest
     return manifest_dict
+
+
+def is_plugin_in_extra_path(plugin_name, extra_paths):
+    if extra_paths is None:
+        return False, None
+
+    plugin_name_version = plugin_name.split(':')
+    plugin_name = plugin_name_version[0]
+    if len(plugin_name_version) > 1:
+        plugin_version = plugin_name_version[1]
+    else:
+        plugin_version = 'any'
+
+    plugin_path = None
+    for extra_path in extra_paths:
+        path = os.path.realpath(os.path.join(extra_path, plugin_name))
+        if os.path.exists(path):
+            plugin_path = path
+            break
+
+    if plugin_path is None:
+        return False, None
+
+    if plugin_version == 'any':
+        return True, plugin_path
+
+    manifest_path = os.path.join(plugin_path, '__manifest__.py')
+    try:
+        with open(manifest_path) as f:
+            manifest = ast.literal_eval(f.read())
+    except Exception as e:
+        str(e)
+        raise ImportError('load plugin \'{0} ({1})\' failed, unable load {2}.'
+                          .format(plugin_name, plugin_version, manifest_path))
+
+    if 'version' not in manifest:
+        raise ImportError('load plugin \'{0} ({1})\' failed, version not exist in manifest file.'
+                          .format(plugin_name, plugin_version))
+
+    if manifest['version'] != plugin_version:
+        raise ImportError('load plugin \'{0} ({1})\' failed, version not match ({2} != {3}.'
+                          .format(plugin_name, plugin_version, plugin_version, manifest['version']))
+
+    return True, plugin_path
