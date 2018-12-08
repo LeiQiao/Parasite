@@ -1,6 +1,7 @@
 from flask import Flask
-import pa
 from plugins.base import *
+
+from parasite import pa
 
 app = Flask(__name__)
 pa.web_app = app

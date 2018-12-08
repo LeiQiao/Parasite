@@ -6,7 +6,7 @@ from setuptools import setup
 
 _version_re = re.compile(r'__version__\s+=\s+(.*)')
 
-with io.open('pa/__init__.py', 'rb') as f:
+with io.open('parasite/pa/__init__.py', 'rb') as f:
     version = str(ast.literal_eval(_version_re.search(
         f.read().decode('utf-8')).group(1)))
 
@@ -24,8 +24,8 @@ setup(
         'pa.bin'
     ],
     package_dir={
-        "pa": "pa",
-        "pa.bin": "bin"
+        "pa": "parasite/pa",
+        "pa.bin": "parasite/pa/bin"
     },
     eager_resources=['sample/__manifest__.py'],
     package_data={

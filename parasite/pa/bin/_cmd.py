@@ -1,15 +1,16 @@
-import click
-from termcolor import cprint
-import os
-import git
-import re
 import ast
+import os
+import re
 import sys
+
+import click
+import git
 import requests
+from termcolor import cprint
 
 if __name__ == '__main__':
-    from bin.download_source import pa_root, parasite_config_url
-    from bin.pycharm_project import create_temp_project
+    from parasite.pa.bin.download_source import pa_root, parasite_config_url
+    from parasite.pa.bin.pycharm_project import create_temp_project
 else:
     from .download_source import pa_root, parasite_config_url
     from .pycharm_project import create_temp_project
