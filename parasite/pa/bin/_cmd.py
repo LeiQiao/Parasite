@@ -265,7 +265,7 @@ def to_underscore(name):
         cr = name[i]
         if 'A' <= cr <= 'Z':
             if i > 0 and ('a' <= name[i-1] <= 'z'):
-                underscore_name += '_{0}'.format(cr)
+                underscore_name += '_{0}'.format(cr.lower())
             else:
                 underscore_name += '{0}'.format(cr.lower())
         else:
