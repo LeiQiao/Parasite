@@ -20,24 +20,13 @@ def debug_plugin(plugin_path, config_file=None, extra_plugin_paths=None):
     except Exception as e:
         str(e)
         raise FileNotFoundError('can NOT found __manifest__.py file in plugin path: {0}'
-                                .format(plugin_path), 'red')
+                                .format(plugin_path))
 
     project_path = os.path.join(plugin_path, '.parasite')
 
     download_parasite(project_path)
 
-    extra_plugins = []
-
-    if 'depends' in manifest:
-        with tempfile.TemporaryDirectory() as temp_path:
-            for depend_plugin in manifest['depends']:
-                is_extra_plugin, extra_plugin_path = is_plugin_in_extra_path(depend_plugin,
-                                                                             extra_plugin_paths)
-                if is_extra_plugin:
-                    extra_plugins.append(extra_plugin_path)
-                else:
-                    download_plugin(pa_root, depend_plugin, temp_path, project_path)
-
+    extra_plugins = get_all_depend_extra_plugins_and_download_plugin(manifest, project_path, extra_plugin_paths)
     extra_plugins.append(os.path.realpath(plugin_path))
 
     # 修改工程文件
@@ -68,3 +57,27 @@ def debug_plugin(plugin_path, config_file=None, extra_plugin_paths=None):
 
     print('debuging plugin \'{0} ({1})\'...'.format(manifest['name'], manifest['version']))
     exec('import Parasite')
+
+
+def get_all_depend_extra_plugins_and_download_plugin(manifest, project_path, extra_plugin_paths):
+    extra_plugins = []
+    if 'depends' in manifest:
+        with tempfile.TemporaryDirectory() as temp_path:
+            for depend_plugin in manifest['depends']:
+                is_extra_plugin, extra_plugin_path = is_plugin_in_extra_path(depend_plugin,
+                                                                             extra_plugin_paths)
+                if is_extra_plugin:
+                    extra_plugins.append(extra_plugin_path)
+
+                    manifest_file = os.path.join(extra_plugin_path, '__manifest__.py')
+                    try:
+                        with open(manifest_file) as f:
+                            manifest = ast.literal_eval(f.read())
+                    except Exception as e:
+                        str(e)
+                        raise FileNotFoundError('can NOT found __manifest__.py file in plugin path: {0}'
+                                                .format(extra_plugin_path))
+                    get_all_depend_extra_plugins_and_download_plugin(manifest, project_path, extra_plugin_paths)
+                else:
+                    download_plugin(pa_root, depend_plugin, temp_path, project_path)
+    return extra_plugins
