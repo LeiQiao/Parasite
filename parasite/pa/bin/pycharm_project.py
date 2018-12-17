@@ -150,9 +150,8 @@ def add_parasite_path_inspector(project_path, project_name):
         str(e)
 
 
-def ignore_parasite(project_path, project_name):
+def ignore_parasite(project_path, parasite_path):
     ignore_file = os.path.join(project_path, '.gitignore')
-    parasite_path = os.path.join(project_path, project_name, '.parasite').lower()
     if not os.path.exists(ignore_file):
         return
 
@@ -160,13 +159,14 @@ def ignore_parasite(project_path, project_name):
         ignore_items = f.readlines()
 
     for ignore_item in ignore_items:
-        ignore_item = os.path.join(os.path.relpath(project_path, os.getcwd()), ignore_item.strip())
-        if os.path.realpath(ignore_item).lower() == parasite_path:
+        ignore_item = os.path.abspath(ignore_item.strip()).lower()
+        abs_parasite_path = os.path.abspath(parasite_path).lower()
+        if ignore_item == abs_parasite_path:
             return
 
     if not click.confirm('是否将调试用的 .parasite 文件夹添加到 git 忽略项中？', default=True):
         return
 
-    ignore_items.append(os.path.relpath(parasite_path, project_path.lower()))
+    ignore_items.append(parasite_path)
     with open(ignore_file, 'w') as f:
         f.writelines(ignore_items)
