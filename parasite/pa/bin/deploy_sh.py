@@ -30,6 +30,11 @@ def deploy_sh(project_name, manifest_file, config_file=None,
     # 添加 Parasite 的下载代码
     sh_content += 'echo -e "\033[34m clone Parasite... \033[0m"\n'
     sh_content += 'git clone {0} Parasite.git\n'.format(parasite_git_url)
+    sh_content += 'rc=$?\n'
+    sh_content += 'if [[ $rc != 0 ]]; then\n'
+    sh_content += '    echo -e "[31m unable download Parasite [0m"\n'
+    sh_content += '    exit $rc\n'
+    sh_content += 'fi\n'
     sh_content += 'cp -r Parasite.git/parasite $project_name\n'
     sh_content += 'rm -rf Parasite.git'
     sh_content += '\n\n'
@@ -58,6 +63,11 @@ def deploy_sh(project_name, manifest_file, config_file=None,
         # 下载插件代码
         if source_url not in downloaded_source:
             sh_content += '{0}\n'.format(source_url)
+            sh_content += 'rc=$?\n'
+            sh_content += 'if [[ $rc != 0 ]]; then\n'
+            sh_content += '    echo -e "[31m unable download plugin \'{0}\' [0m"\n'.format(depend_name)
+            sh_content += '    exit $rc\n'
+            sh_content += 'fi\n'
             downloaded_source[source_url] = source_path_name
         # 设置子目录
         if 'path' in manifest['source'] and len(manifest['source']['path']) > 0:
