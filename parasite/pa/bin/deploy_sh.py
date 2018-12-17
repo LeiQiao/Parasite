@@ -35,7 +35,7 @@ def deploy_sh(project_name, manifest_file, config_file=None,
     sh_content += '\n\n'
 
     # 构建依赖插件包
-    all_depend_manifest = get_all_depend_manifest(pa_root, manifest_file)
+    all_depend_manifest = get_all_depend_manifest(pa_root, manifest_file, extra_plugin_paths)
     index = 1
     depend_length = len(all_depend_manifest.keys())
     downloaded_source = {}

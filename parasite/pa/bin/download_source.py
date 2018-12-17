@@ -94,7 +94,7 @@ def get_plugin_manifest_path(plugin_root, plugin_name):
     return manifest_path
 
 
-def __get_plugin_manifest(plugin_root, plugin_name):
+def __get_plugin_manifest(plugin_root, plugin_name, extra_plugin_paths=None):
     name_and_version = plugin_name.split(':')
     plugin_name = name_and_version[0].strip()
     if len(name_and_version) > 1:
@@ -102,19 +102,32 @@ def __get_plugin_manifest(plugin_root, plugin_name):
     else:
         plugin_version = None
 
-    plugin_path = os.path.join(plugin_root, plugin_name)
+    plugin_path = None
+    local_plugin = False
+    for extra_plugin_path in extra_plugin_paths:
+        local_plugin_path = os.path.join(extra_plugin_path, plugin_name)
+        if os.path.exists(local_plugin_path):
+            plugin_path = local_plugin_path
+            local_plugin = True
+            break
+    if plugin_path is None:
+        plugin_path = os.path.join(plugin_root, plugin_name)
+
     if not os.path.exists(plugin_path):
         raise ModuleNotFoundError('plugin \'{0}\' not exist'.format(plugin_name))
-    versions = os.listdir(plugin_path)
-    if len(versions) == 0:
-        raise ModuleNotFoundError('plugin \'{0}\' not exist'.format(plugin_name))
-    if plugin_version is None:
-        plugin_version = versions[0]
-    elif plugin_version not in versions:
-        raise ModuleNotFoundError('given version not exist \'{0}\' ({1})'
-                                  .format(plugin_name, plugin_version))
 
-    plugin_path = os.path.join(plugin_path, plugin_version)
+    if not local_plugin:
+        versions = os.listdir(plugin_path)
+        if len(versions) == 0:
+            raise ModuleNotFoundError('plugin \'{0}\' not exist'.format(plugin_name))
+        if plugin_version is None:
+            plugin_version = versions[0]
+        elif plugin_version not in versions:
+            raise ModuleNotFoundError('given version not exist \'{0}\' ({1})'
+                                      .format(plugin_name, plugin_version))
+
+        plugin_path = os.path.join(plugin_path, plugin_version)
+
     manifest_path = os.path.join(plugin_path, '__manifest__.py')
     try:
         with open(manifest_path) as f:
@@ -126,7 +139,7 @@ def __get_plugin_manifest(plugin_root, plugin_name):
     return manifest_path, manifest, plugin_name, plugin_version
 
 
-def get_all_depend_manifest(plugin_root, manifest_file):
+def get_all_depend_manifest(plugin_root, manifest_file, extra_plugin_paths=None):
     all_depend_manifest = {}
 
     for file in manifest_file:
@@ -134,14 +147,18 @@ def get_all_depend_manifest(plugin_root, manifest_file):
             manifest = ast.literal_eval(f.read())
         for depend_name in manifest['depends']:
             all_depend_manifest = __merge_manifest(all_depend_manifest,
-                                                   __get_all_depend_manifest(plugin_root, depend_name))
+                                                   __get_all_depend_manifest(plugin_root,
+                                                                             depend_name,
+                                                                             extra_plugin_paths))
         all_depend_manifest = __merge_manifest(all_depend_manifest, {manifest['name']: manifest})
 
     return all_depend_manifest
 
 
-def __get_all_depend_manifest(plugin_root, plugin_name, depend_by=None):
-    _, manifest, _, plugin_version = __get_plugin_manifest(plugin_root, plugin_name)
+def __get_all_depend_manifest(plugin_root, plugin_name, extra_plugin_paths=None, depend_by=None):
+    _, manifest, _, plugin_version = __get_plugin_manifest(plugin_root,
+                                                           plugin_name,
+                                                           extra_plugin_paths)
 
     # 防止循环引用
     if depend_by is None:
@@ -162,7 +179,10 @@ def __get_all_depend_manifest(plugin_root, plugin_name, depend_by=None):
     all_depend_manifest = {plugin_name: manifest}
     if 'depends' in manifest:
         for dname in manifest['depends']:
-            __merge_manifest(all_depend_manifest, __get_all_depend_manifest(plugin_root, dname, new_depend_by))
+            __merge_manifest(all_depend_manifest, __get_all_depend_manifest(plugin_root,
+                                                                            dname,
+                                                                            extra_plugin_paths,
+                                                                            new_depend_by))
 
     return all_depend_manifest
 
