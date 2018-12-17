@@ -17,7 +17,8 @@ setup(
     install_requires=[
         'requests',
         'termcolor',
-        'click'
+        'click',
+        'gitpython'
     ],
     packages=[
         'pa',
