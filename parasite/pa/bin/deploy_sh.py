@@ -8,7 +8,8 @@ def get_plugin_manifest_path(plugin_name):
     return manifest_path
 
 
-def deploy_sh(project_name, manifest_file, config_file=None, resource_file=None, output=None):
+def deploy_sh(project_name, manifest_file, config_file=None,
+              extra_plugin_paths=None, resource_file=None, output=None):
     """创建部署脚本"""
     output_name = '{0}.sh'.format(project_name)
     if output is not None and len(output) > 0:
