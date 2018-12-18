@@ -24,7 +24,8 @@ def deploy_sh(project_name, manifest_file, config_file=None,
     if not os.path.exists(output_dir):
         os.makedirs(output_dir, exist_ok=True)
 
-    sh_content = 'project_name={0}\n'.format(project_name)
+    sh_content = '#!/bin/bash\n\n'
+    sh_content += 'project_name={0}\n'.format(project_name)
     sh_content += '\n\n'
 
     # 添加 Parasite 的下载代码
@@ -91,7 +92,7 @@ def deploy_sh(project_name, manifest_file, config_file=None,
             for i in range(len(content)):
                 str_content += '\\\\x{:02X}'.format(content[i])
         sh_content += 'echo -e "\033[34m writing \'config.conf\'... \033[0m"\n'
-        sh_content += 'echo -n -e {0} > $project_name/config.conf\n'.format(str_content)
+        sh_content += 'echo -e {0} > $project_name/config.conf\n'.format(str_content)
         sh_content += '\n\n'
 
     # 资源文件
@@ -115,7 +116,7 @@ def deploy_sh(project_name, manifest_file, config_file=None,
             sh_content += 'if [ ! -d "$project_name/{0}" ]; then\n'.format(os.path.dirname(file_name))
             sh_content += '    mkdir -p "$project_name/{0}"\n'.format(os.path.dirname(file_name))
             sh_content += 'fi\n'
-            sh_content += 'echo -n -e {0} > \"$project_name/{1}\"\n'.format(str_content, file_name)
+            sh_content += 'echo -e {0} > \"$project_name/{1}\"\n'.format(str_content, file_name)
             sh_content += '\n\n'
             index += 1
 
