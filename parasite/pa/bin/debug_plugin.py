@@ -32,7 +32,8 @@ def debug_plugin(plugin_path, config_file=None, extra_plugin_paths=None):
     # 修改工程文件
     idea_path = os.path.realpath(os.path.join(plugin_path, '..'))
     project_name = os.path.basename(idea_path)
-    add_parasite_path_inspector(idea_path, project_name)
+    plugin_name = os.path.basename(plugin_path)
+    add_parasite_path_inspector(idea_path, project_name, plugin_name)
     parasite_path = os.path.relpath(project_path, idea_path)
     ignore_parasite(idea_path, parasite_path)
 

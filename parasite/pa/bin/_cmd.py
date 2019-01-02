@@ -151,6 +151,8 @@ def build_deploy_sh():
         ['../{0}/__manifest__.py'],
         # 数据库等配置信息
         '../deploy/config.conf',
+        # 与当前插件一起开发的本地插件所在的路径
+        ['../'],
         # 需要拷贝的资源文件
         {{
             # '<resource file>': '<target path/>[target name]',
@@ -172,7 +174,7 @@ if __name__ == '__main__':
 def create(project_name, plugin_name, output):
     """创建工程，生成工程的目录及调试和部署文件"""
     if len(project_name) == 0:
-        cprint('usage: {0} install <project_name> [plugin name] '
+        cprint('usage: {0} create <project_name> [plugin name] '
                '[--output=<output dir>]'.format(sys.argv[0]), 'red')
         sys.exit(1)
 
@@ -191,10 +193,10 @@ def create(project_name, plugin_name, output):
 
     # 创建插件
     os.makedirs(project_root)
-    create_plugin_at(project_name, plugin_name, class_name, project_root)
+    create_plugin_at(plugin_name, class_name, project_root)
 
     # 创建示例工程的部署和调试脚本
-    deploy_file_content = DEPLOY_FILE_CONTENT.format(project_name)
+    deploy_file_content = DEPLOY_FILE_CONTENT.format(plugin_name)
     config_file_response = requests.get(parasite_config_url)
     if config_file_response.status_code != 200:
         cprint('创建失败，无法下载配置文件模板', 'red')
@@ -209,35 +211,30 @@ def create(project_name, plugin_name, output):
         f.write(config_file_content)
 
     # 创建 pycharm 的工程文件夹 .idea
-    create_temp_project(project_root, project_name)
+    create_temp_project(project_root, project_name, plugin_name)
 
     cprint('创建成功', 'blue')
 
 
 @main.command()
-@click.argument('project_name', required=True, default='')
 @click.argument('plugin_name', required=True, default='')
 @click.option('--output', default='./')
-def create_plugin(project_name, plugin_name, output):
+def create_plugin(plugin_name, output):
     """创建插件"""
-    if len(project_name) == 0:
-        cprint('usage: {0} install <project_name> [plugin_name] '
+    if len(plugin_name) == 0:
+        cprint('usage: {0} create_plugin plugin_name '
                '[--output=<output dir>]'.format(sys.argv[0]), 'red')
         sys.exit(1)
 
-    if len(plugin_name) == 0:
-        plugin_name = '{0}_plugin'.format(to_underscore(project_name))
-        class_name = '{0}Plugin'.format(to_camel(project_name))
-    else:
-        class_name = to_camel(plugin_name)
+    class_name = to_camel(plugin_name)
 
     project_root = os.path.expanduser(output)
-    create_plugin_at(project_name, plugin_name, class_name, project_root)
+    create_plugin_at(plugin_name, class_name, project_root)
 
     cprint('创建成功', 'blue')
 
 
-def create_plugin_at(project_name, plugin_name, class_name, output):
+def create_plugin_at(plugin_name, class_name, output):
     project_root = output
     if not os.path.exists(project_root):
         cprint('fatal: destination path \'{0}\' not exists.'
@@ -246,10 +243,10 @@ def create_plugin_at(project_name, plugin_name, class_name, output):
 
     # 创建示例工程文件
     init_file_content = INIT_FILE_CONTENT.format(plugin_name, class_name)
-    manifest_file_content = MANIFEST_FILE_CONTENT.format(project_name)
-    plugin_file_content = PLUGIN_FILE_CONTENT.format(class_name, project_name)
+    manifest_file_content = MANIFEST_FILE_CONTENT.format(plugin_name)
+    plugin_file_content = PLUGIN_FILE_CONTENT.format(class_name, plugin_name)
 
-    project_path = os.path.join(project_root, project_name)
+    project_path = os.path.join(project_root, plugin_name)
     os.makedirs(project_path)
     with open(os.path.join(project_path, '__init__.py'), 'w') as f:
         f.write(init_file_content)

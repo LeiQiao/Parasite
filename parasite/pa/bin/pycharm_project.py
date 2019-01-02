@@ -66,6 +66,7 @@ IML_FILE_CONTENT = """<?xml version="1.0" encoding="UTF-8"?>
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/{0}/.parasite" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/{0}/.parasite/plugins" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -77,7 +78,7 @@ IML_FILE_CONTENT = """<?xml version="1.0" encoding="UTF-8"?>
 </module>"""
 
 
-def create_temp_project(project_path, project_name):
+def create_temp_project(project_path, project_name, plugin_name):
     idea_path = os.path.join(project_path, '.idea')
     if not os.path.exists(idea_path):
         os.makedirs(idea_path)
@@ -86,10 +87,10 @@ def create_temp_project(project_path, project_name):
     with open(os.path.join(idea_path, 'workspace.xml'), 'w') as f:
         f.write(workspace_xml)
 
-    add_parasite_path_inspector(project_path, project_name)
+    add_parasite_path_inspector(project_path, project_name, plugin_name)
 
 
-def add_parasite_path_inspector(project_path, project_name):
+def add_parasite_path_inspector(project_path, project_name, plugin_name):
     idea_path = os.path.join(project_path, '.idea')
     if not os.path.exists(idea_path):
         os.makedirs(idea_path)
@@ -101,13 +102,13 @@ def add_parasite_path_inspector(project_path, project_name):
 
     iml_file_name = os.path.join(idea_path, '{0}.iml'.format(project_name))
     if not os.path.exists(iml_file_name):
-        iml = IML_FILE_CONTENT.format(project_name)
+        iml = IML_FILE_CONTENT.format(plugin_name)
         with open(iml_file_name, 'w') as f:
             f.write(iml)
 
     try:
         tree = ElementTree.ElementTree(file=iml_file_name)
-        parasite_url = 'file://$MODULE_DIR$/{0}/.parasite'.format(project_name)
+        parasite_url = 'file://$MODULE_DIR$/{0}/.parasite'.format(plugin_name)
         xml_edited = False
         already_added = False
         module_namager_e = None
