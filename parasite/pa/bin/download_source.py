@@ -5,8 +5,8 @@ import shutil
 import tempfile
 
 pa_root = os.path.join(os.getenv("HOME"), '.parasite/repos/master/Specs/')
-parasite_git_url = 'https://github.com/LeiQiao/Parasite.git'
-parasite_config_url = 'https://raw.githubusercontent.com/LeiQiao/Parasite/master/parasite/config.conf'
+parasite_git_url = 'http://172.31.13.131:8088/parasite/Parasite.git'
+parasite_config_url = 'http://172.31.13.131:8088/parasite/Parasite/raw/master/parasite/config.conf'
 
 
 def download_parasite(output_dir):
