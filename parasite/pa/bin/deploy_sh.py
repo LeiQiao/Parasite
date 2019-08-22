@@ -17,6 +17,8 @@ def deploy_sh(project_name, manifest_file, config_file=None,
             output_dir = output
         else:
             output_dir = os.path.dirname(output)
+            if len(output_dir) == 0:
+                output_dir = './'
             output_name = os.path.basename(output)
     else:
         output_dir = os.getcwd()

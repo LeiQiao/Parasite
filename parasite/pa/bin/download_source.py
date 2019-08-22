@@ -104,12 +104,13 @@ def __get_plugin_manifest(plugin_root, plugin_name, extra_plugin_paths=None):
 
     plugin_path = None
     local_plugin = False
-    for extra_plugin_path in extra_plugin_paths:
-        local_plugin_path = os.path.join(extra_plugin_path, plugin_name)
-        if os.path.exists(local_plugin_path):
-            plugin_path = local_plugin_path
-            local_plugin = True
-            break
+    if extra_plugin_paths is not None:
+        for extra_plugin_path in extra_plugin_paths:
+            local_plugin_path = os.path.join(extra_plugin_path, plugin_name)
+            if os.path.exists(local_plugin_path):
+                plugin_path = local_plugin_path
+                local_plugin = True
+                break
     if plugin_path is None:
         plugin_path = os.path.join(plugin_root, plugin_name)
 
