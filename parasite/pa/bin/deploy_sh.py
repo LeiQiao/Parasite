@@ -9,7 +9,7 @@ def get_plugin_manifest_path(plugin_name):
 
 
 def deploy_sh(project_name, manifest_file, config_file=None,
-              extra_plugin_paths=None, resource_file=None, output=None):
+              extra_plugin_paths=None, resource_file=None, output=None, tar_name=None):
     """创建部署脚本"""
     output_name = '{0}.sh'.format(project_name)
     if output is not None and len(output) > 0:
@@ -124,7 +124,12 @@ def deploy_sh(project_name, manifest_file, config_file=None,
 
     # 打包
     sh_content += 'echo -e "\033[34m packaging ${project_name}.tar... \033[0m"\n'
-    sh_content += 'tar cf $project_name.tar $project_name\n'
+    if tar_name is not None:
+        if tar_name[-4:].lower() != '.tar':
+            tar_name = tar_name + '.tar'
+        sh_content += 'tar cf {0} $project_name\n'.format(tar_name)
+    else:
+        sh_content += 'tar cf $project_name.tar $project_name\n'
     sh_content += 'rm -rf $project_name\n'
 
     # 保存
