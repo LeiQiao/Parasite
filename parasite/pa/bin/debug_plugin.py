@@ -53,7 +53,8 @@ def debug_plugin(plugin_path, config_file=None, extra_plugin_paths=None):
         py_file,
         '-c',
         'config.conf' if config_file is None else os.path.realpath(config_file),
-        '--extra_plugin={0}'.format(','.join(extra_plugins))
+        '--extra_plugin={0}'.format(','.join(extra_plugins)),
+        'debug'
     ]
     os.chdir(project_path)
 
