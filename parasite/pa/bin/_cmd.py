@@ -33,7 +33,7 @@ def update():
     # 从 git 上更新所有插件包描述
     print('正在从 matser 中更新插件包 ...')
     if clone:
-        git.Repo.clone_from(url='git@git.chinapnr.com:parasite/Parasite-Repo.git', to_path=pa_root)
+        git.Repo.clone_from(url='https://github.com/LeiQiao/Parasite-Repo.git', to_path=pa_root)
     else:
         result = git.Git(pa_root).pull()
         print(result)
