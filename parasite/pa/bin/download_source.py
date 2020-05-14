@@ -50,6 +50,11 @@ def download_plugin(plugin_root, plugin_name, temp_dir, output_dir):
     if not os.path.exists(plugin_path):
         raise ModuleNotFoundError('plugin \'{0}\' not exist'.format(plugin_name))
     versions = os.listdir(plugin_path)
+    version_count = len(versions)
+    while version_count > 0:
+        if versions[version_count-1].startswith('.'):
+            del versions[version_count-1]
+        version_count -= 1
     if len(versions) == 0:
         raise ModuleNotFoundError('plugin \'{0}\' not exist'.format(plugin_name))
     if plugin_version is None:
