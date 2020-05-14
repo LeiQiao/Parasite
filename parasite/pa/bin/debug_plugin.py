@@ -39,14 +39,14 @@ def debug_plugin(plugin_path, config_file=None, extra_plugin_paths=None):
 
     # 更改环境变量，启动调试
     py_file = os.path.realpath(os.path.join(project_path, 'Parasite.py'))
-    with open(py_file) as f:
-        content = f.read()
-        try:
-            content = re.sub('if __name__ == \'__main__\':', 'if True:', content)
-        except Exception as e:
-            str(e)
-    with open(py_file, 'w') as f:
-        f.write(content)
+    # with open(py_file) as f:
+    #     content = f.read()
+    #     try:
+    #         content = re.sub('if __name__ == \'__main__\':', 'if True:', content)
+    #     except Exception as e:
+    #         str(e)
+    # with open(py_file, 'w') as f:
+    #     f.write(content)
 
     sys.path.insert(0, os.path.realpath(project_path))
     sys.argv = [
