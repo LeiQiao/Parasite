@@ -1,7 +1,5 @@
 __version__ = '0.0.0'
 
-from flask_sqlalchemy import SQLAlchemy
-
 
 # Flask 应用程序
 web_app = None
@@ -12,7 +10,7 @@ log = None
 
 
 # 数据库
-database = SQLAlchemy()
+database = None
 
 
 # 服务 ip/port
