@@ -80,12 +80,14 @@ def get_all_depend_extra_plugins_and_download_plugin(manifest, project_path, ext
                         str(e)
                         raise FileNotFoundError('can NOT found __manifest__.py file in plugin path: {0}'
                                                 .format(extra_plugin_path))
+                    insert_pos = len(extra_plugins)-1
                     for ep in get_all_depend_extra_plugins_and_download_plugin(manifest,
                                                                                project_path,
                                                                                extra_plugin_paths):
                         if ep in extra_plugins:
                             continue
-                        extra_plugins.insert(0, ep)
+                        extra_plugins.insert(insert_pos, ep)
+                        insert_pos += 1
                 else:
                     download_plugin(pa_root, depend_plugin, temp_path, project_path)
     return extra_plugins
