@@ -7,6 +7,44 @@ from .download_source import pa_root, download_parasite, download_plugin, is_plu
 from .pycharm_project import add_parasite_path_inspector, ignore_parasite
 
 
+def test_manifest(path):
+    manifest_file = os.path.join(path, '__manifest__.py')
+    if not os.path.exists(manifest_file):
+        return False
+
+    try:
+        with open(manifest_file) as f:
+            manifest = ast.literal_eval(f.read())
+            if 'name' not in manifest:
+                return False
+            if 'source' not in manifest:
+                return False
+            if 'version' not in manifest or manifest['version'] == '':
+                return False
+    except Exception as e:
+        _ = e
+        return False
+    return True
+
+
+
+def get_all_plugin_from_path(path):
+    all_plugins = []
+    path = os.path.realpath(path)
+    for root, dirs, files in os.walk(path):
+        if path != root:
+            continue
+        for plugin_name in dirs:
+            # trim '__pacache__', '.DB_Store' etc.
+            if plugin_name.startswith('__') or plugin_name.startswith('.'):
+                continue
+            plugin_path = os.path.join(path, plugin_name)
+            if test_manifest(plugin_path):
+                all_plugins.append(plugin_path)
+    return all_plugins
+
+
+
 def debug_plugin(plugin_path, config_file=None, extra_plugin_paths=None):
     if not config_file:
         if not os.path.exists(config_file):
@@ -28,6 +66,12 @@ def debug_plugin(plugin_path, config_file=None, extra_plugin_paths=None):
 
     extra_plugins = get_all_depend_extra_plugins_and_download_plugin(manifest, project_path, extra_plugin_paths)
     extra_plugins.append(os.path.realpath(plugin_path))
+
+    for extra_plugin_path in extra_plugin_paths:
+        aps = get_all_plugin_from_path(extra_plugin_path)
+        for p in aps:
+            if p not in extra_plugins:
+                extra_plugins.append(p)
 
     # 修改工程文件
     idea_path = os.path.realpath(os.path.join(plugin_path, '..'))
