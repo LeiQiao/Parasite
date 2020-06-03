@@ -117,7 +117,7 @@ def deploy_sh(project_name, manifest_file, config_file=None,
             for file_name in file_names:
                 if len(file_name) > 0:
                     if os.path.isdir(file_name) or os.path.basename(file_name) == '':
-                        file_name = '{0}/{1}'.format(file_name, origin_file_name)
+                        file_name = os.path.join(file_name, origin_file_name)
                 else:
                     file_name = origin_file_name
 
