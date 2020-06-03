@@ -103,24 +103,32 @@ def deploy_sh(project_name, manifest_file, config_file=None,
         resource_length = len(resource_file.keys())
         for file, dest_path in resource_file.items():
             str_content = ''
-            file_name = os.path.basename(file)
+            origin_file_name = os.path.basename(file)
             with open(file, 'rb') as f:
                 content = f.read()
                 for i in range(len(content)):
                     str_content += '\\\\x{:02X}'.format(content[i])
-            if len(dest_path) > 0:
-                if os.path.isdir(dest_path) or os.path.basename(dest_path) == '':
-                    file_name = '{0}/{1}'.format(dest_path, file_name)
+            file_names = []
+            if isinstance(dest_path, list):
+                file_names = dest_path
+            else:
+                file_names.append(dest_path)
+
+            for file_name in file_names:
+                if len(file_name) > 0:
+                    if os.path.isdir(file_name) or os.path.basename(file_name) == '':
+                        file_name = '{0}/{1}'.format(file_name, origin_file_name)
                 else:
-                    file_name = dest_path
-            sh_content += 'echo -e "\033[34m writing resource file \'{0}\'... ({1}/{2}) \033[0m"\n'\
-                          .format(file_name, index, resource_length)
-            sh_content += 'if [ ! -d "$project_name/{0}" ]; then\n'.format(os.path.dirname(file_name))
-            sh_content += '    mkdir -p "$project_name/{0}"\n'.format(os.path.dirname(file_name))
-            sh_content += 'fi\n'
-            sh_content += 'echo -e {0} > \"$project_name/{1}\"\n'.format(str_content, file_name)
-            sh_content += '\n\n'
-            index += 1
+                    file_name = origin_file_name
+
+                sh_content += 'echo -e "\033[34m writing resource file \'{0}\'... ({1}/{2}) \033[0m"\n'\
+                              .format(file_name, index, resource_length)
+                sh_content += 'if [ ! -d "$project_name/{0}" ]; then\n'.format(os.path.dirname(file_name))
+                sh_content += '    mkdir -p "$project_name/{0}"\n'.format(os.path.dirname(file_name))
+                sh_content += 'fi\n'
+                sh_content += 'echo -e {0} > \"$project_name/{1}\"\n'.format(str_content, file_name)
+                sh_content += '\n\n'
+                index += 1
 
     # 打包
     sh_content += 'echo -e "\033[34m packaging ${project_name}.tar... \033[0m"\n'
