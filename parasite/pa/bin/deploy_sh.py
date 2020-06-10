@@ -34,7 +34,7 @@ def deploy_sh(project_name, manifest_file, config_file=None,
     sh_content += '\n\n'
 
     # 添加 Parasite 的下载代码
-    sh_content += 'echo -e "\033[34m clone Parasite... \033[0m"\n'
+    sh_content += 'echo -e "\033[36m clone Parasite... \033[0m"\n'
     sh_content += 'git clone {0} Parasite.git\n'.format(parasite_git_url)
     sh_content += 'rc=$?\n'
     sh_content += 'if [[ $rc != 0 ]]; then\n'
@@ -51,7 +51,7 @@ def deploy_sh(project_name, manifest_file, config_file=None,
     depend_length = len(all_depend_manifest.keys())
     downloaded_source = {}
     for depend_name, manifest in all_depend_manifest.items():
-        sh_content += 'echo -e "\033[34m installing plugins \'{0}\'...({1}/{2}) \033[0m"\n'\
+        sh_content += 'echo -e "\033[36m installing plugins \'{0}\'...({1}/{2}) \033[0m"\n'\
                       .format(depend_name, index, depend_length)
         if 'git' in manifest['source']:
             git_address = manifest['source']['git']
@@ -96,7 +96,7 @@ def deploy_sh(project_name, manifest_file, config_file=None,
             content = f.read()
             for i in range(len(content)):
                 str_content += '\\\\x{:02X}'.format(content[i])
-        sh_content += 'echo -e "\033[34m writing \'config.conf\'... \033[0m"\n'
+        sh_content += 'echo -e "\033[36m writing \'config.conf\'... \033[0m"\n'
         sh_content += 'echo -e {0} > $project_name/config.conf\n'.format(str_content)
         sh_content += '\n\n'
 
@@ -124,7 +124,7 @@ def deploy_sh(project_name, manifest_file, config_file=None,
                 else:
                     file_name = origin_file_name
 
-                sh_content += 'echo -e "\033[34m writing resource file \'{0}\'... ({1}/{2}) \033[0m"\n'\
+                sh_content += 'echo -e "\033[36m writing resource file \'{0}\'... ({1}/{2}) \033[0m"\n'\
                               .format(file_name, index, resource_length)
                 sh_content += 'if [ ! -d "$project_name/{0}" ]; then\n'.format(os.path.dirname(file_name))
                 sh_content += '    mkdir -p "$project_name/{0}"\n'.format(os.path.dirname(file_name))
@@ -134,7 +134,7 @@ def deploy_sh(project_name, manifest_file, config_file=None,
                 index += 1
 
     # 打包
-    sh_content += 'echo -e "\033[34m packaging ${project_name}.tar... \033[0m"\n'
+    sh_content += 'echo -e "\033[36m packaging ${project_name}.tar... \033[0m"\n'
     if tar_name is not None:
         if tar_name[-4:].lower() != '.tar':
             tar_name = tar_name + '.tar'
@@ -160,10 +160,10 @@ def package_tar(project_name, manifest_file, config_file=None,
         os.makedirs('.pa.cache/gits', exist_ok=True)
 
     if not os.path.exists('.pa.cache/gits/Parasite'):
-        print('\033[34m downloading Parasite... \033[0m')
+        print('\033[36m downloading Parasite... \033[0m')
         git.Repo.clone_from(url=parasite_git_url, to_path='.pa.cache/gits/Parasite')
     else:
-        print('\033[34m updating Parasite... \033[0m')
+        print('\033[36m updating Parasite... \033[0m')
         g = git.cmd.Git('.pa.cache/gits/Parasite')
         g.reset('--hard')
         g.pull()
@@ -178,7 +178,7 @@ def package_tar(project_name, manifest_file, config_file=None,
 
     # 复制配置文件
     if config_file is not None:
-        print('\033[34m writing \'config.conf\'... \033[0m')
+        print('\033[36m writing \'config.conf\'... \033[0m')
         shutil.copyfile(config_file, os.path.join(project_path, 'config.conf'))
 
     # 资源文件
@@ -203,7 +203,7 @@ def package_tar(project_name, manifest_file, config_file=None,
                 if file_name[0] == '/':
                     file_name = file_name[1:]
 
-                print("\033[34m writing resource file \'{0}\'... \033[0m".format(
+                print("\033[36m writing resource file \'{0}\'... \033[0m".format(
                     file_name, index, resource_length))
 
                 file_name = os.path.join(project_path, file_name)
@@ -220,7 +220,12 @@ def package_tar(project_name, manifest_file, config_file=None,
         git_path = os.path.join('.pa.cache/gits', d)
         g = git.cmd.Git(git_path)
         url = g.config('remote.origin.url')
-        branch = g.rev_parse('--abbrev-ref', 'HEAD')
+        try:
+            branch = g.rev_parse('--abbrev-ref', 'HEAD')
+        except Exception as e:
+            _ = e
+            shutil.rmtree(git_path, ignore_errors=True)
+            continue
         cached_gits[url] = {
             'branch': branch,
             'path': git_path,
@@ -267,7 +272,7 @@ def package_tar(project_name, manifest_file, config_file=None,
                     g.check_out(git_branch)
                     cached_git['branch'] = git_branch
                 if not cached_git['pulled']:
-                    print('\033[34m updating {0}... \033[0m'.format(os.path.basename(git_url)))
+                    print('\033[36m updating {0}... \033[0m'.format(os.path.basename(git_url)))
                     g.reset('--hard')
                     g.pull()
                     cached_git['pulled'] = True
@@ -275,7 +280,7 @@ def package_tar(project_name, manifest_file, config_file=None,
                 break
 
         if len(src_plugin_path) == 0:
-            print('\033[34m downloading {0} from {1}... \033[0m'.format(plugin_name, git_address))
+            print('\033[36m downloading {0} from {1}... \033[0m'.format(plugin_name, git_address))
             git_path = os.path.join('.pa.cache/gits', os.path.basename(git_address))
             git.Repo.clone_from(url=git_address, to_path=git_path, branch=git_branch)
 
@@ -290,7 +295,7 @@ def package_tar(project_name, manifest_file, config_file=None,
         if len(src_plugin_path) == 0:
             raise FileNotFoundError('unable found plugin {0}'.format(plugin_name))
 
-        print('\033[34m installing plugin \'{0}\'... \033[0m'.format(plugin_name))
+        print('\033[36m installing plugin \'{0}\'... \033[0m'.format(plugin_name))
         shutil.copytree(src_plugin_path, os.path.join(project_plugin_path, plugin_name))
 
     # 打包
@@ -309,7 +314,7 @@ def package_tar(project_name, manifest_file, config_file=None,
     if not os.path.exists(output_dir):
         os.makedirs(output_dir, exist_ok=True)
 
-    print('\033[34m packaging {0}... \033[0m'.format(output_name))
+    print('\033[36m packaging {0}... \033[0m'.format(output_name))
     if output_name is not None:
         if output_name[-8:].lower() != '.tar.bz2':
             output_name = output_name + '.tar.bz2'
@@ -321,4 +326,4 @@ def package_tar(project_name, manifest_file, config_file=None,
     # clean up
     shutil.rmtree(project_path, ignore_errors=True)
 
-    print('\033[34m done \033[0m')
+    print('\033[36m done \033[0m')
