@@ -115,23 +115,24 @@ def get_all_depend_extra_plugins_and_download_plugin(manifest, project_path, ext
                                                                              extra_plugin_paths)
                 if is_extra_plugin:
                     extra_plugins.append(extra_plugin_path)
-
-                    manifest_file = os.path.join(extra_plugin_path, '__manifest__.py')
-                    try:
-                        with open(manifest_file) as f:
-                            manifest = ast.literal_eval(f.read())
-                    except Exception as e:
-                        str(e)
-                        raise FileNotFoundError('can NOT found __manifest__.py file in plugin path: {0}'
-                                                .format(extra_plugin_path))
-                    insert_pos = len(extra_plugins)-1
-                    for ep in get_all_depend_extra_plugins_and_download_plugin(manifest,
-                                                                               project_path,
-                                                                               extra_plugin_paths):
-                        if ep in extra_plugins:
-                            continue
-                        extra_plugins.insert(insert_pos, ep)
-                        insert_pos += 1
+                    depend_plugin_path = extra_plugin_path
                 else:
-                    download_plugin(pa_root, depend_plugin, temp_path, project_path)
+                    depend_plugin_path = download_plugin(pa_root, depend_plugin, temp_path, project_path)
+                manifest_file = os.path.join(depend_plugin_path, '__manifest__.py')
+                try:
+                    with open(manifest_file) as f:
+                        manifest = ast.literal_eval(f.read())
+                except Exception as e:
+                    str(e)
+                    raise FileNotFoundError('can NOT found __manifest__.py file in plugin path: {0}'
+                                            .format(depend_plugin_path))
+                insert_pos = len(extra_plugins)-1
+                for ep in get_all_depend_extra_plugins_and_download_plugin(manifest,
+                                                                            project_path,
+                                                                            extra_plugin_paths):
+                    if ep in extra_plugins:
+                        continue
+                    extra_plugins.insert(insert_pos, ep)
+                    insert_pos += 1
+                
     return extra_plugins

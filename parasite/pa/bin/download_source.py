@@ -92,6 +92,7 @@ def download_plugin(plugin_root, plugin_name, temp_dir, output_dir):
             git_path = os.path.join(git_path, manifest['source']['path'])
         git_path = os.path.join(git_path, plugin_name)
         shutil.copytree(git_path, plugin_dir)
+    return plugin_dir
 
 
 def get_plugin_manifest_path(plugin_root, plugin_name):
