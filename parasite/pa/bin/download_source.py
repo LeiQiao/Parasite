@@ -38,7 +38,7 @@ def download_plugin(plugin_root, plugin_name, temp_dir, output_dir):
         except Exception as e:
             str(e)
         if manifest and (manifest['version'] == plugin_version or plugin_version is None):
-            return
+            return plugin_dir
         shutil.rmtree(plugin_dir)
 
     if plugin_version is not None:
