@@ -3,6 +3,7 @@ __version__ = '0.0.0'
 
 # Flask 应用程序
 web_app = None
+session = None
 
 
 # 日志服务
