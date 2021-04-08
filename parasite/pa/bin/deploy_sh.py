@@ -280,9 +280,15 @@ def package_tar(project_name, manifest_file, config_file=None,
                 break
 
         if len(src_plugin_path) == 0:
-            print('\033[36m downloading {0} from {1}... \033[0m'.format(plugin_name, git_address))
             git_path = os.path.join('.pa.cache/gits', os.path.basename(git_address))
-            git.Repo.clone_from(url=git_address, to_path=git_path, branch=git_branch)
+
+            if not os.path.exists(git_path):
+                print('\033[36m downloading {0} from {1}... \033[0m'.format(plugin_name, git_address))
+                git.Repo.clone_from(url=git_address, to_path=git_path, branch=git_branch)
+            else:
+                print('\033[36m updating {0} from {1}... \033[0m'.format(plugin_name, git_address))
+                g = git.cmd.Git(git_path)
+                g.pull('origin', git_branch)
 
             cached_gits[git_address] = {
                 'branch': git_branch,
@@ -318,7 +324,7 @@ def package_tar(project_name, manifest_file, config_file=None,
     if output_name is not None:
         if output_name[-8:].lower() != '.tar.bz2':
             output_name = output_name + '.tar.bz2'
-    os.system("cd .pa.cache &&tar cJf {0} {1} && cd ..".format(
+    os.system("cd .pa.cache && tar cJf {0} {1} && cd ..".format(
         output_name,
         project_name))
     shutil.move(os.path.join('.pa.cache', output_name), os.path.join(output_dir, output_name))
